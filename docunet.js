@@ -20,6 +20,8 @@ function createDoc(source){
   //console.log('tree', tree);
 
   var module = [];
+  var reg = {};
+  var regFunc = {};
 
   walker.simple(tree, {
     CallExpression: function(n, st, c){
@@ -36,7 +38,27 @@ function createDoc(source){
           }
         }
       }
-    },
+      //find registration of parameters
+      if (n.callee && n.arguments){
+        if (n.callee.property && n.arguments.length === 2){
+          if (['factory','directive','filter','service','provider']
+                .indexOf(n.callee.property.name) > -1){
+            console.log('REG: ' + n.callee.property.name + ' - ');
+            reg[n.arguments[1].name] = {
+              type: n.callee.property.name,
+              publicName:  n.arguments[0].value,
+              funcName: n.arguments[1].name
+            };
+            regFunc[n.arguments[1].name] = n.arguments[0].value;
+          }
+        }
+      }
+    }
+  });
+
+  console.log('reg', reg);
+
+  walker.simple(tree, {    
     ExpressionStatement: function(n, st, c){
       //search for public functions
       var func = {
@@ -92,12 +114,21 @@ function createDoc(source){
         func.type = 'class';
       }
       //is special type?
+      /*
       ['factory','directive','filter','service','provider'].forEach(function(type){
         if (func.name.toLowerCase().indexOf(type)>-1) {
           func.type = type;
           func.level = 0;
         }
       });
+      */
+      if (reg[func.name]){
+        //var registeredName = regFunc[func.name];
+        //console.log('registeredName', func.name, reg[func.name]);
+        func.type = reg[func.name].type
+        func.publicName = reg[func.name].publicName;
+        func.level = 0;
+      }
 
       if (n.params){ //parameters
         n.params.forEach(function(param){
@@ -160,14 +191,19 @@ function createDoc(source){
 
   //console.log('doc', doc);
   console.log('module', module);
+  //console.log('reg', reg);
+  //console.log('regFunc', regFunc);
   return doc;
 }
 
-//test
-//var source = fs.readFileSync(path.resolve(process.cwd(),'angular-uam.js'));
-//var doc = createDoc(source);
-//fs.writeFileSync(path.resolve(process.cwd(), 'angular-uam.doc.json'), JSON.stringify(doc));
 
+var test = false;
+//test
+if (test){
+  var source = fs.readFileSync(path.resolve(process.cwd(),'angular-uam.js'));
+  var doc = createDoc(source);
+  fs.writeFileSync(path.resolve(process.cwd(), 'angular-uam.doc.json'), JSON.stringify(doc));
+}
 
 var modules = [];
 
@@ -185,5 +221,7 @@ function processDir(uri){
   });
 }
 
-processDir('input');
-fs.writeFileSync(path.resolve(process.cwd(), 'output','docs.json'), JSON.stringify(modules));
+if (!test){
+  processDir('input');
+  fs.writeFileSync(path.resolve(process.cwd(), 'output','docs.json'), JSON.stringify(modules));
+}
