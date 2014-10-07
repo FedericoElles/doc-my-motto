@@ -61,6 +61,7 @@
           <img style="height: 16px;" src="img/docArrow.png" alt="" aria-hidden="true" hide block-sm>
         </span>
         <h3 flex>
+          <span ng-if="ctrl.activeModule.name">Modules ></span>
           <span ng-bind="ctrl.activeModule.name"></span>
         </h3>
       </div>
@@ -96,81 +97,93 @@
     </material-toolbar>
 
     <material-content ng-view scroll-y flex class="material-content-padding">
+      <material-content>
+        <material-tabs selected="ctrl.activeTab">
+         <material-tab ng-repeat="item in ctrl.activeModule.children" label="Test{{child.name}}">
+         </material-tab>
+        </material-tabs>
+      </material-content>
+      <a  id="top"></a>
 
-      <material-tabs selected="ctrl.activeTab">
-        <material-tab ng-repeat="child in ctrl.activeModule.children" label="{{child.name}}">
-        </material-tab>
-      </material-tabs>
+
+      <material-content>
+        <material-list>
+          <material-item ng-repeat="item in ctrl.activeModule.children" >
+            <div>
+              <p style="cursor:pointer;" ng-click="ctrl.goto(item.publicName)" ng-bind="item.publicName"></p>
+            </div>
+          </material-item>
+        </material-list>
+
+      </material-content>      
+
+      <section ng-repeat="item in ctrl.activeModule.children"
+               id="{{item.publicName}}"
+               class="material-whiteframe-z2" >
+        <material-toolbar ng-class="{
+            'material-theme-light': item.type==='factory',
+            'material-theme-red': item.type==='directive',
+            'material-theme-light-blue': item.type==='service',
+            'material-theme-dark': item.type==='provider',
+            'material-theme-orange': item.type==='filter'
+          }" class="material-theme-dark">
+          <h2 class="material-toolbar-tools">
+            <span ng-bind="item.publicName"></span>
+            <!--<small ng-bind="item.name"></small>
+            [<small ng-bind="item.type"></small>]-->
+          </h2>
+        </material-toolbar>
 
 
-       <material-content>
-          <material-list>
-            <material-item ng-repeat="item in ctrl.activeModule.children">
-              <material-item-content class="material-whiteframe-z1">
-                <div class="material-tile-content">
-                  <material-toolbar ng-class="{
-                      'material-theme-light': item.type==='factory',
-                      'material-theme-red': item.type==='directive',
-                      'material-theme-light-blue': item.type==='service',
-                      'material-theme-dark': item.type==='provider',
-                      'material-theme-orange': item.type==='filter'
-                    }" class="material-theme-dark">
-                    <h2 class="material-toolbar-tools">
-                      <span ng-bind="item.publicName"></span>
-                      <small ng-bind="item.name"></small>
-                      [<small ng-bind="item.type"></small>]
-                    </h2>
-                  </material-toolbar>
-                  
 
-                  <span ng-if="item.type === 'factory' || item.type === 'service' || item.type === 'provider'">
-                    <br>
-                    Inject via: <code ng-bind="item.publicName"></code>
-                  </span>
-                  
-                  <span ng-if="item.type === 'service'">
-                    <br>
-                    <br>
-                    Create new instance with <code> var x = new {{item.publicName}}()</code>
-                  </span>
+        <material-content class="material-content-padding"
+                          style="margin-bottom:25px;">
+          <span ng-if="item.type === 'factory' || item.type === 'service' || item.type === 'provider'">
+            Inject via: <code ng-bind="item.publicName"></code>
+          </span>
 
-                  <h2 ng-if="item.api.funcs">API</h2>
-                  
-                  <h3 ng-repeat-start="func in item.api.funcs" class="xcode">
-                    <span ng-if="func.parentObject">.</span><span ng-bind="func.name"></span>
-                    (
-                    <span ng-repeat="param in func.params">
-                      <span ng-bind="param.name"></span>
-                      <span ng-if="!$last">, </span>
-                    </span>
-                    )
-                  </h3>
-                  <br>
+          <span ng-if="item.type === 'service'">
+            <br>
+            <br>
+            Create new instance with <code> var x = new {{item.publicName}}()</code>
+          </span>
 
-                  <p ng-repeat-end></p>
+          <div  ng-if="item.api.funcs">
+            <h3>API</h3>
 
-                  <h2 ng-if="item.internal.funcs">INTERNAL</h2>
+            <span ng-repeat-start="func in item.api.funcs" class="xcode">
+              <span ng-if="func.parentObject">.</span><span ng-bind="func.name"></span>
+              (
+              <span ng-repeat="param in func.params">
+                <span ng-bind="param.name"></span>
+                <span ng-if="!$last">, </span>
+              </span>
+              )
+            </span>
+            <br>
 
-                  <h4 ng-repeat-start="func in item.internal.funcs" class="xcode">
-                    <span ng-if="func.parentObject" ng-bind="func.parentObject + '.'"></span><span ng-bind="func.name"></span>
-                    (
-                    <span ng-repeat="param in func.params">
-                      <span ng-bind="param.name"></span>
-                      <span ng-if="!$last">, </span>
-                    </span>
-                    )
-                  </h4>
-                  <br>
+            <p ng-repeat-end></p>
+          </div>
 
-                  <p ng-repeat-end></p>
+          <h3 ng-if="item.internal.funcs">INTERNAL</h3>
 
-                </div>
-              </material-item-content>
-              <material-divider ng-if="!$last"></material-divider>
-            </material-item>
-          </material-list>
-        </material-content>
+          <span ng-repeat-start="func in item.internal.funcs" class="xcode">
+            <span ng-if="func.parentObject" ng-bind="func.parentObject + '.'"></span><span ng-bind="func.name"></span>
+            (
+            <span ng-repeat="param in func.params">
+              <span ng-bind="param.name"></span>
+              <span ng-if="!$last">, </span>
+            </span>
+            )
+          </span>
+          <br>
 
+          <p ng-repeat-end></p>  
+        </material-content>   
+      </section>
+
+
+      <br><br>
       <pre ng-bind="ctrl.activeModule | json"></pre>
 
 

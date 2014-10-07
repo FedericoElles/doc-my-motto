@@ -1,15 +1,25 @@
 
 
 
-function DocsCtrl($scope, $http){
+function DocsCtrl($scope, $http, $location, $anchorScroll){
   $scope.ctrl = {
     activeModuleName: '', //active Module
     activeModule: undefined,
     setActive: function(module){
       this.activeModuleName = module.name;
       this.activeModule = module;
+      $location.hash('top');
+      $anchorScroll();
     },
-    activeTab: 0
+    activeTab: 0,
+    goto: function(id) {
+      // set the location.hash to the id of
+      // the element you wish to scroll to.
+      $location.hash(id);
+
+      // call $anchorScroll()
+      $anchorScroll();
+    }
   };
 
 
