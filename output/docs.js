@@ -17,6 +17,7 @@ function DocsCtrl($scope, $http){
   $http({method: 'GET', url: '/docs.json'}).
     success(function(data, status, headers, config) {
       $scope.modules = data;
+      $scope.ctrl.setActive(data[0]);
       console.log('data', data);
     }).
     error(function(data, status, headers, config) {

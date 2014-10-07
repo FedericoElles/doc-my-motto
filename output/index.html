@@ -20,7 +20,7 @@
 
     <material-toolbar class="material-theme-light material-medium-tall">
       <h1 class="material-toolbar-tools">
-        <a href="#" ng-click="goHome()">Documentation</a>
+        <a href="#" ng-click="goHome()">Aurora</a>
       </h1>
     </material-toolbar>
 
@@ -61,7 +61,7 @@
           <img style="height: 16px;" src="img/docArrow.png" alt="" aria-hidden="true" hide block-sm>
         </span>
         <h3 flex>
-          Aurora
+          <span ng-bind="ctrl.activeModule.name"></span>
         </h3>
       </div>
 
@@ -106,24 +106,37 @@
        <material-content>
           <material-list>
             <material-item ng-repeat="item in ctrl.activeModule.children">
-              <material-item-content>
+              <material-item-content class="material-whiteframe-z1">
                 <div class="material-tile-content">
-                  <h2>{{item.name}} [{{item.publicName}}] <small>{{item.type}}</small></h2>
+                  <material-toolbar ng-class="{
+                      'material-theme-light': item.type==='factory',
+                      'material-theme-red': item.type==='directive',
+                      'material-theme-light-blue': item.type==='service',
+                      'material-theme-dark': item.type==='provider',
+                      'material-theme-orange': item.type==='filter'
+                    }" class="material-theme-dark">
+                    <h2 class="material-toolbar-tools">
+                      <span ng-bind="item.publicName"></span>
+                      <small ng-bind="item.name"></small>
+                      [<small ng-bind="item.type"></small>]
+                    </h2>
+                  </material-toolbar>
+                  
 
                   <span ng-if="item.type === 'factory' || item.type === 'service' || item.type === 'provider'">
+                    <br>
                     Inject via: <code ng-bind="item.publicName"></code>
                   </span>
-                  <br>
-                  <br>
+                  
                   <span ng-if="item.type === 'service'">
+                    <br>
+                    <br>
                     Create new instance with <code> var x = new {{item.publicName}}()</code>
                   </span>
-                  <br>
-                  <br>
 
-                  <h3>API</h3>
+                  <h2 ng-if="item.api.funcs">API</h2>
                   
-                  <h4 ng-repeat-start="func in item.api.funcs" class="xcode">
+                  <h3 ng-repeat-start="func in item.api.funcs" class="xcode">
                     <span ng-if="func.parentObject">.</span><span ng-bind="func.name"></span>
                     (
                     <span ng-repeat="param in func.params">
@@ -131,13 +144,12 @@
                       <span ng-if="!$last">, </span>
                     </span>
                     )
-                  </h4>
+                  </h3>
                   <br>
 
                   <p ng-repeat-end></p>
 
-                  <br><br>
-                  <h3>Internal</h3>
+                  <h2 ng-if="item.internal.funcs">INTERNAL</h2>
 
                   <h4 ng-repeat-start="func in item.internal.funcs" class="xcode">
                     <span ng-if="func.parentObject" ng-bind="func.parentObject + '.'"></span><span ng-bind="func.name"></span>

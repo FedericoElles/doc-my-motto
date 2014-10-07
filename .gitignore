@@ -1,0 +1,6 @@
+*.sw*
+*~
+bin/
+input/
+node_modules/
+/vendor/

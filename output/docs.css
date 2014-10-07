@@ -1,3 +1,12 @@
+/* CUSTOM */
+
+
+.xcode {
+  color: #4285f4;
+  font-family: monospace;
+  font-size:1.3em !important;
+}
+
 /*!
  * Angular Material Design
  * https://github.com/angular/material
