@@ -10,9 +10,28 @@ function createDoc(source){
 
   var comments = {}; //map all comments
 
+  function ltrim(s, char)
+  {
+    var l=0;
+    while(l < s.length && s[l] == char)
+    { l++; }
+    return s.substring(l, s.length);
+  }
+
+
   var tree = acorn.parse(source, {locations:true, onComment:function(block, text, start, end, location){
-    console.log('Comment:', location.line +': '+ text);
-    comments[location.line] = text;
+    var len = text.length - text.replace(/\n/g,'').length;
+    var parts = text.replace(/\r/g,'').split('\n');
+    var newText = [];
+    for (var i = 0, ii = parts.length;i<ii;i+=1){
+      parts[i] = ltrim(ltrim(ltrim(parts[i],' '),'*'),' ');
+      if (parts[i].length>0){
+        newText.push(parts[i]);
+      }
+    }
+    var text2 = newText.join('\n');
+    console.log('Comment:', (location.line+len) +':\n'+ text2);
+    comments[location.line+len] = newText;
   }});
 
   //console.log('source', source.toString());
@@ -81,6 +100,14 @@ function createDoc(source){
             func.name = n.expression.left.property.name;
           }
 
+          if (func.name[0] === func.name[0].toUpperCase()){
+            func.type = 'class';
+            func.api = {
+              funcs: [],
+              vars: []
+            };   
+          }
+
           if (n.expression.right.params){ //parameters
             n.expression.right.params.forEach(function(param){
               func.params.push({
@@ -112,6 +139,10 @@ function createDoc(source){
       //is class?
       if (func.name[0] === func.name[0].toUpperCase()){
         func.type = 'class';
+        func.api = {
+          funcs: [],
+          vars: []
+        };     
       }
       //is special type?
       /*
@@ -156,33 +187,55 @@ function createDoc(source){
   }
 
   //convert module to tree
-  var eParent;
+  var eParent,
+      classParent;
   module.forEach(function(element){
+    //comments
+    if (element.line > 0){
+      if (comments[element.line-1]){
+        element.comment = comments[element.line-1];
+      }
+    }
+
+
     if (element.level === 0){
       element.internal = {
-        funcs: {},
-        vars: {}
+        funcs: [],
+        vars: []
       };
       element.api = {
-        funcs: {},
-        vars: {}      
+        funcs: [],
+        vars: []      
       };
       eParent = element;
       doc.children.push(element);
+      classParent = false;
     } else { //children
       if (eParent){
+        if (element.type === 'class'){
+          classParent = element;
+        }
+
         //determine target for element
         if (element.public){
-          if (element.type === 'function'){
-            eParent.api.funcs[element.name] = element;
-          } else {
-            eParent.api.vars[element.name] = element;
+          if (!element.parentObject && classParent){ //no parent object, belongs to Class
+            if (element.type === 'function'){
+              classParent.api.funcs.push(element);
+            } else {
+              classParent.api.vars.push(element);
+            }
+          } else { //parent object: belongs to module
+            if (element.type === 'function'){
+              eParent.api.funcs.push(element);
+            } else {
+              eParent.api.vars.push(element);
+            }
           }
         } else {
           if (element.type === 'function'){
-            eParent.internal.funcs[element.name] = element;
+            eParent.internal.funcs.push(element);
           } else {
-            eParent.internal.vars[element.name] = element;
+            eParent.internal.vars.push(element);
           } 
         }
       }
@@ -197,12 +250,13 @@ function createDoc(source){
 }
 
 
-var test = false;
+var test = true;
 //test
 if (test){
-  var source = fs.readFileSync(path.resolve(process.cwd(),'angular-uam.js'));
+  var file = 'angular-defer.js'
+  var source = fs.readFileSync(path.resolve(process.cwd(),'input', file));
   var doc = createDoc(source);
-  fs.writeFileSync(path.resolve(process.cwd(), 'angular-uam.doc.json'), JSON.stringify(doc));
+  fs.writeFileSync(path.resolve(process.cwd(), file.replace('js','json')), JSON.stringify(doc, null, 4));
 }
 
 var modules = [];
@@ -223,5 +277,5 @@ function processDir(uri){
 
 if (!test){
   processDir('input');
-  fs.writeFileSync(path.resolve(process.cwd(), 'output','docs.json'), JSON.stringify(modules));
+  fs.writeFileSync(path.resolve(process.cwd(), 'output','docs.json'), JSON.stringify(modules, null, 4));
 }
