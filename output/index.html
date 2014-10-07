@@ -148,43 +148,26 @@
             Create new instance with <code> var x = new {{item.publicName}}()</code>
           </span>
 
-          <div  ng-if="item.api.funcs">
+          <div  ng-if="item.api.funcs.length || item.api.vars.length">
             <h3>API</h3>
-
-            <span ng-repeat-start="func in item.api.funcs" class="xcode">
-              <span ng-if="func.parentObject">.</span><span ng-bind="func.name"></span>
-              (
-              <span ng-repeat="param in func.params">
-                <span ng-bind="param.name"></span>
-                <span ng-if="!$last">, </span>
-              </span>
-              )
-            </span>
-            <br>
-
-            <p ng-repeat-end></p>
+            <p ng-repeat="func in item.api.funcs">
+              <code-line func="func"></code-line>
+            </p>
           </div>
 
-          <h3 ng-if="item.internal.funcs">INTERNAL</h3>
-
-          <span ng-repeat-start="func in item.internal.funcs" class="xcode">
-            <span ng-if="func.parentObject" ng-bind="func.parentObject + '.'"></span><span ng-bind="func.name"></span>
-            (
-            <span ng-repeat="param in func.params">
-              <span ng-bind="param.name"></span>
-              <span ng-if="!$last">, </span>
-            </span>
-            )
-          </span>
-          <br>
-
-          <p ng-repeat-end></p>  
+          <div ng-if="item.internal.funcs.length || item.internal.vars.length">
+            <h3>INTERNAL</h3>
+            <p ng-repeat="func in item.internal.funcs">
+              <code-line func="func"></code-line>
+            </p> 
+          </div>
         </material-content>   
       </section>
 
 
-      <br><br>
+      <!--<br><br>
       <pre ng-bind="ctrl.activeModule | json"></pre>
+      -->
 
 
     </ng-view>
@@ -192,4 +175,55 @@
   </div>
 
 
+  <!-- TEMPLATES-->
+
+  <script type="text/ng-template" id="codeLine.html">
+    <span class="xcode">
+      <span ng-if="func.parentObject && func.type==='class'">new {{func.parentObject}}.</span><!--
+      --><span ng-if="func.parentObject && func.type==='function'">.</span><!--
+      --><span ng-bind="func.name"></span><!--
+      -->(<!--
+      --><span ng-repeat="param in func.params"><!--
+        --><span ng-class="{
+          'var-primitive': param.type==='boolean' || 
+                           param.type==='number' ||
+                           param.type==='string',
+          'var-function': param.type==='function',
+          'var-object': param.type==='object',
+          'var-array': param.type==='array'
+          }" 
+          ng-bind="param.name"
+          title="{{param.desc}}"></span><!--
+        --><span ng-if="!$last">, </span><!--
+      --></span><!--
+      -->)
+    </span>
+    <span ng-bind="func.comments.join(' ')"></span>
+    <div ng-if="func.type==='class' && func.api" class="code-block">
+      <p ng-repeat="subfunc in func.api.funcs">
+        <span class="xcode">
+          <span ng-if="subfunc.type==='function'">.</span><!--
+          --><span ng-bind="subfunc.name"></span><!--
+          -->(<!--
+          --><span ng-repeat="param in subfunc.params"><!--
+            --><span ng-class="{
+              'var-primitive': param.type==='boolean' || 
+                               param.type==='number' ||
+                               param.type==='string',
+              'var-function': param.type==='function',
+              'var-object': param.type==='object',
+              'var-array': param.type==='array'
+              }" 
+              ng-bind="param.name"
+              title="{{param.desc}}"></span><!--
+            --><span ng-if="!$last">, </span><!--
+          --></span><!--
+          -->)
+        </span>
+        <span ng-bind="subfunc.comments.join(' ')"></span>
+      </p>
+    </div>
+
+
+  </script>
 </body>

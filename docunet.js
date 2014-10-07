@@ -100,12 +100,14 @@ function createDoc(source){
             func.name = n.expression.left.property.name;
           }
 
-          if (func.name[0] === func.name[0].toUpperCase()){
-            func.type = 'class';
-            func.api = {
-              funcs: [],
-              vars: []
-            };   
+          if (func.name){
+            if (func.name[0] === func.name[0].toUpperCase()){
+              func.type = 'class';
+              func.api = {
+                funcs: [],
+                vars: []
+              };   
+            }
           }
 
           if (n.expression.right.params){ //parameters
@@ -201,13 +203,13 @@ function createDoc(source){
     //try to match comments against params
     if (element.comments && element.params){
       element.params.forEach(function(param){
-        element.comments.forEach(function(comment){
+        element.comments.forEach(function(comment, idx){
           commentParts = comment.split(' ');
           if (commentParts[0] === param.name &&
               commentParts.length > 1){
             param.type = commentParts[1];
             param.desc = commentParts.splice(2).join(' ');
-            comment = '';
+            element.comments[idx] = '';
           }
         })
       });
@@ -235,20 +237,20 @@ function createDoc(source){
         //determine target for element
         if (element.public){
           if (!element.parentObject && classParent){ //no parent object, belongs to Class
-            if (element.type === 'function'){
+            if (element.type === 'function' || element.type === 'class'){
               classParent.api.funcs.push(element);
             } else {
               classParent.api.vars.push(element);
             }
           } else { //parent object: belongs to module
-            if (element.type === 'function'){
+            if (element.type === 'function' || element.type === 'class'){
               eParent.api.funcs.push(element);
             } else {
               eParent.api.vars.push(element);
             }
           }
         } else {
-          if (element.type === 'function'){
+          if (element.type === 'function' || element.type === 'class'){
             eParent.internal.funcs.push(element);
           } else {
             eParent.internal.vars.push(element);
@@ -266,7 +268,7 @@ function createDoc(source){
 }
 
 
-var test = true;
+var test = false;
 //test
 if (test){
   var file = 'angular-defer.js'

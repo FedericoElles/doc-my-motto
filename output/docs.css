@@ -4,9 +4,30 @@
 .xcode {
   color: #4285f4;
   font-family: monospace;
-  font-size:1.3em !important;
+  font-size:1.2em !important;
 }
 
+.code-block{
+  margin-left:40px;
+  padding-left:5px;
+  border-left:2px solid #DDD;
+}
+
+.var-primitive{
+  color:#db4437;  
+}
+
+.var-function{
+  color:#9c27b0;  
+}
+
+.var-object{
+  color:#03a9f4;  
+}
+
+.var-array{
+  color:#0f9d58;  
+}
 /*!
  * Angular Material Design
  * https://github.com/angular/material

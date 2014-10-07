@@ -36,8 +36,21 @@ function DocsCtrl($scope, $http, $location, $anchorScroll){
     });  
 }
 
+
+
+function codeLineDirective(){
+ return {
+    restrict: 'E',
+    scope: {
+      func: '='
+    },
+    templateUrl: 'codeLine.html'
+  };  
+}
+
 angular.module('docsApp', [])
-.controller('DocsCtrl', DocsCtrl);
+.controller('DocsCtrl', DocsCtrl)
+.directive('codeLine', codeLineDirective);
 
 
 
