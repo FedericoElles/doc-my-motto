@@ -188,13 +188,29 @@ function createDoc(source){
 
   //convert module to tree
   var eParent,
-      classParent;
+      classParent,
+      commentParts;
   module.forEach(function(element){
     //comments
     if (element.line > 0){
       if (comments[element.line-1]){
-        element.comment = comments[element.line-1];
+        element.comments = comments[element.line-1];
       }
+    }
+
+    //try to match comments against params
+    if (element.comments && element.params){
+      element.params.forEach(function(param){
+        element.comments.forEach(function(comment){
+          commentParts = comment.split(' ');
+          if (commentParts[0] === param.name &&
+              commentParts.length > 1){
+            param.type = commentParts[1];
+            param.desc = commentParts.splice(2).join(' ');
+            comment = '';
+          }
+        })
+      });
     }
 
 
