@@ -4356,7 +4356,7 @@
                 ],
                 "publicName": "tcSearch",
                 "comments": [
-                    "TimoCom Search Service",
+                    "Search Service",
                     "Core service to search the DB for Data",
                     "@ngInject"
                 ],
